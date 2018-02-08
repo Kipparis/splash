@@ -11,6 +11,9 @@ using Gma.UserActivityMonitor;
 using System.Runtime.InteropServices;
 using AxWMPLib;
 
+
+// Сделать открываемую в трее менюшку, для выбора корневой директории
+// для класса ExSoundPlayer
 namespace backMusic {
     public enum mainState {
         idle,
@@ -37,7 +40,6 @@ namespace backMusic {
 
         ExSoundPlayer mPlayer;
 
-        NotifyIcon trayIcon;
         PictureBox pb1;
         PictureBox pb2;
         
@@ -54,6 +56,8 @@ namespace backMusic {
                     case MCI_NOTIFY_SUCCESS:
                         // success handling
                         //MessageBox.Show("success handling");
+                        // Играет следующую песню, в зависимости от внутреннего значения
+                        // state в классе
                         mPlayer.NextSong();
                         PlaySong();
                         break;
@@ -88,7 +92,7 @@ namespace backMusic {
             secondScreen = new Form() {
                 Text = "Second Screen",
                 BackColor = Color.FromArgb(255, 232, 232)
-        };
+            };
             secondScreen.Show();
 
             firstScreen.Location = new Point(0, 0);
@@ -143,12 +147,6 @@ namespace backMusic {
                 Visible = false
             };
 
-            trayIcon = new NotifyIcon() {
-                Text = "My app",
-                Icon = new System.Drawing.Icon("face.ico"),
-                Visible = true
-            };
-
             firstScreen.Controls.Add(pb1);
             secondScreen.Controls.Add(pb2);
 
@@ -157,24 +155,15 @@ namespace backMusic {
             HookManager.KeyPress += HookManager_PressedKey;
             HookManager.MouseMove += HookManager_MouseMove;
 
+            // Делаем всё всё с окнами, а потом просто скрываем
             SetUpScreens();
         }
 
         private void HookManager_PressedKey( object sender, KeyPressEventArgs e) {
             if (state == mainState.awake) return; // Если комп в рабочем состоянии, то мы даже не проверяем клаву
             if (e.KeyChar == 'o') {
-                //mPlayer.Play("C:\\sht\\music\\soul.mp3");
-                using (OpenFileDialog dlgOpen = new OpenFileDialog()) {
-                    dlgOpen.Filter = "Mp3 File|*.mp3";
-                    dlgOpen.InitialDirectory = @"C:\sht\music\";
-
-                    if (dlgOpen.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
-                        //mPlayer = new ExSoundPlayer(dlgOpen.FileName);
-                        //mPlayer.repeat = true;
-                        //mPlayer = new ExSoundPlayer(dlgOpen.FileName);
-                        //mPlayer.Play(dlgOpen.FileName);
-                    }
-                }
+                mPlayer.NextSong();
+                PlaySong();
             } else
             if (e.KeyChar == 'p') {
                 if (mPlayer != null) {
@@ -198,8 +187,13 @@ namespace backMusic {
                 //MessageBox.Show(mPlayer.currentPos.ToString());
             } else
              if (e.KeyChar == 'r') {
-                mPlayer.ChooseRandom();
-                PlaySong();
+                mPlayer.state = playerState.random;
+            } else
+            if (e.KeyChar == 't') {
+                mPlayer.state = playerState.repeat;
+            } else
+            if (e.KeyChar == 'y') {
+                mPlayer.state = playerState.order;
             } else
             if (e.KeyChar == 'f') {
                 Idle();
@@ -225,10 +219,9 @@ namespace backMusic {
 
         // Когда передвигается мышь
         private void HookManager_MouseMove(object sender, MouseEventArgs e) {
-            ResetTimer();
-            if (state == mainState.awake) {
-                return;
-            }// Значит сейчас фаза сна
+            // Если таймер !включён!
+            if (timer.Enabled) ResetTimer();  // Обновляем таймер
+            if (state == mainState.awake) return;   // Значит сейчас фаза сна
             Awake();
         }
 
@@ -239,7 +232,8 @@ namespace backMusic {
             firstScreen.TopMost = true;
             // Увеличение размера, добавление картинки
             pb1.Size = firstScreen.Size;
-            
+
+            if (Screen.AllScreens.Length < 2) return;
             // Картинка добавлена на раннем этапе
             /////////Для второго монитора            
             secondScreen.FormBorderStyle = FormBorderStyle.None;
@@ -266,15 +260,6 @@ namespace backMusic {
         void Awake() {
             state = mainState.awake;
             Cursor.Show();
-            //firstScreen.Visible = false;
-
-            //firstScreen.FormBorderStyle = FormBorderStyle.Sizable;
-            //firstScreen.WindowState = FormWindowState.Normal;
-            //firstScreen.TopMost = false;
-
-            //secondScreen.FormBorderStyle = FormBorderStyle.Sizable;
-            //secondScreen.WindowState = FormWindowState.Normal;
-            //secondScreen.TopMost = false;
 
             HideAll();
         }
@@ -302,6 +287,29 @@ namespace backMusic {
 
         public void PlaySong() {
             mciSendString(mPlayer.ReturnPlay(), null, 0, this.Handle);
+        }
+
+        private void trayIcon_MouseDoubleClick(object sender, MouseEventArgs e) {
+            MessageBox.Show("Clicked trayIcon");
+        }
+
+        // Выбирает стандартную папку
+        private void ChooseDirectory_Click(object sender, EventArgs e) {
+            using (FolderBrowserDialog dlgOpen = new FolderBrowserDialog()) {
+                //dlgOpen.Filter = "Mp3 File|*.mp3";
+                dlgOpen.SelectedPath = @"C:\sht\";
+
+                if (dlgOpen.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
+                    Form1.path = dlgOpen.SelectedPath;
+                }
+            }
+        }
+
+        // Если таймер уже запущен -> выключает
+        // Таймер выключен -> включает
+        private void StopWatch_Click(object sender, EventArgs e) {
+            if (timer.Enabled)  { timer.Enabled = false; } 
+            else                { timer.Enabled = true; }
         }
     }
 }
