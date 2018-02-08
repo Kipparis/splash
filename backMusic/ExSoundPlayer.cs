@@ -13,6 +13,12 @@ using System.IO;
 
 
 namespace backMusic {
+    public enum playerState {
+        repeat,
+        random,
+        order
+    }
+
     class ExSoundPlayer : IDisposable {
         [DllImport("winmm.dll")]
         private static extern int mciSendString(string strCommand, StringBuilder strReturn, int iReturnLength, IntPtr hwndCallback);
@@ -29,18 +35,39 @@ namespace backMusic {
         public string fileName;
         public string ext;
 
+        public playerState state = playerState.order;  // В зависимости от значения будет проигрывать 
+        // следующую песню
+
         // Формат для того, что бы было легче ( впринципе незачем )
         const string FORMAT = "open {0} type mpegvideo alias {1}";
 
+        // Для того чтобы работал, нужно внешней функцией присвоить значение коревой папки
+        // Присваивает значения класса, что бы можно было вызвать PlaySong() из главной формы
         public void NextSong() {
-            mciSendString("close " + subName, null, 0, IntPtr.Zero);
-            if (pathes == null) {
-                // Если плейлист ещё не создан
-                pathes = Directory.GetFiles(pathFolder);
+            if(subName != null) mciSendString("close " + subName, null, 0, IntPtr.Zero);
+            // Находим все пути к песням и корневую папку
+            FindPath(); 
+            switch (state) {
+                case playerState.repeat:
+                    // Ничего не делаем, т.к. потом заново откроем этот же путь
+                    break;
+                case playerState.random:
+                    // Присваивает значения пути и т.д. к рандомной песне
+                    ChooseRandom();
+                    break;
+                case playerState.order:
+                    // Находим следующую песню в списке
+                    if (path == null) {
+                        path = pathes[0];
+                    } else {
+                        int id = Array.IndexOf(pathes, path);
+                        path = pathes[(id + 1) % pathes.Length];
+                    }
+                    break;
+                default:
+                    break;
             }
-            int id = Array.IndexOf(pathes, path);
-            path = pathes[(id + 1)%pathes.Length];
-            FindName(); // Заного просчитываются все элементы класса
+            FindName(); // Находим контрольные именна для выбранной песни
         }
 
         //mciSendString(@"open C:\Users\Aleksey\Music\wedidit.mp3 type mpegvideo alias wedidit", null, 0, IntPtr.Zero);
@@ -70,9 +97,6 @@ namespace backMusic {
         }
 
         public string ReturnPlay() {
-            if (path == null) {
-                ChooseRandom();
-            }
             mciSendString("open \"" + path + "\" type mpegvideo alias " + subName, null, 0, IntPtr.Zero);
             string command = "play " + subName + " notify";
             return(command);
@@ -100,15 +124,19 @@ namespace backMusic {
             MessageBox.Show("Song ended");
         }
 
+        // Выбирает и сразу присваивает все значения для рандомной песни
         public void ChooseRandom() {
-            if (pathes == null) {
+            path = pathes[randomNumber.Next(0, pathes.Length)];
+        }
+
+        public void FindPath() {
+            if (pathFolder == null) {
+                pathFolder = Form1.path;
                 // Если плейлист ещё не создан
-                if (pathFolder == null) {
-                    pathes = Directory.GetFiles(Form1.path);
+                if (pathes == null) {
+                    pathes = Directory.GetFiles(pathFolder);
                 }
             }
-            path = pathes[randomNumber.Next(0, pathes.Length)];
-            FindName();
         }
     }
 }
