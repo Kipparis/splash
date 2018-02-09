@@ -35,8 +35,9 @@ namespace backMusic {
         public string fileName;
         public string ext;
 
-        public playerState state = playerState.order;  // В зависимости от значения будет проигрывать 
+        // В зависимости от значения будет проигрывать 
         // следующую песню
+        public playerState state = playerState.order;
 
         // Формат для того, что бы было легче ( впринципе незачем )
         const string FORMAT = "open {0} type mpegvideo alias {1}";
@@ -44,22 +45,20 @@ namespace backMusic {
         // Для того чтобы работал, нужно внешней функцией присвоить значение коревой папки
         // Присваивает значения класса, что бы можно было вызвать PlaySong() из главной формы
         public void NextSong() {
-            if(subName != null) mciSendString("close " + subName, null, 0, IntPtr.Zero);
+            if (subName != null) mciSendString("close " + subName, null, 0, IntPtr.Zero);
             // Находим все пути к песням и корневую папку
-            FindPath(); 
+            FindPath();
             switch (state) {
                 case playerState.repeat:
-                    // Ничего не делаем, т.к. потом заново откроем этот же путь
+                    // Открываем этот же путь
                     break;
                 case playerState.random:
-                    // Присваивает значения пути и т.д. к рандомной песне
+                    // Выбираем рандом
                     ChooseRandom();
                     break;
                 case playerState.order:
-                    // Находим следующую песню в списке
-                    if (path == null) {
-                        path = pathes[0];
-                    } else {
+                    // След. песня
+                    if (path == null) { path = pathes[0]; } else {
                         int id = Array.IndexOf(pathes, path);
                         path = pathes[(id + 1) % pathes.Length];
                     }
@@ -70,24 +69,8 @@ namespace backMusic {
             FindName(); // Находим контрольные именна для выбранной песни
         }
 
-        //mciSendString(@"open C:\Users\Aleksey\Music\wedidit.mp3 type mpegvideo alias wedidit", null, 0, IntPtr.Zero);
-        //mciSendString(@"play wedidit", null, 0, IntPtr.Zero);
+        public ExSoundPlayer() {
 
-        public string returnString = "";
-        
-        public ExSoundPlayer(string path) { // Сразу определяем плейлист
-            this.path = path;
-            FindName();
-
-            //mciSendString("open \"" + path + "\" type mpegvideo alias " + subName, null, 0, IntPtr.Zero);
-            // Находим все мп3 в папке и добавляем в список
-        }
-
-        public ExSoundPlayer() { }
-
-        public void Play() {
-            //string command = "play " + subName + " notify";
-            //mciSendString(command, null, 0, IntPtr.Zero);
         }
 
         public void Play(string path) {
@@ -97,9 +80,10 @@ namespace backMusic {
         }
 
         public string ReturnPlay() {
+            //currentSong = name;
             mciSendString("open \"" + path + "\" type mpegvideo alias " + subName, null, 0, IntPtr.Zero);
             string command = "play " + subName + " notify";
-            return(command);
+            return (command);
         }
 
         public void FindName(string path) {

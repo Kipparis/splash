@@ -13,3 +13,18 @@ C:\Users\Aleksey\documents\visual studio 2017\Projects\backMusic\backMusic\bin\D
 C:\Users\Aleksey\documents\visual studio 2017\Projects\backMusic\backMusic\obj\Debug\Interop.WMPLib.dll
 C:\Users\Aleksey\documents\visual studio 2017\Projects\backMusic\backMusic\obj\Debug\AxInterop.WMPLib.dll
 C:\Users\Aleksey\documents\visual studio 2017\Projects\backMusic\backMusic\obj\Debug\backMusic.csproj.ResolveComReference.cache
+C:\sht\backMusic\backMusic\obj\Debug\backMusic.csprojResolveAssemblyReference.cache
+C:\sht\backMusic\backMusic\obj\Debug\Interop.WMPLib.dll
+C:\sht\backMusic\backMusic\obj\Debug\AxInterop.WMPLib.dll
+C:\sht\backMusic\backMusic\obj\Debug\backMusic.csproj.ResolveComReference.cache
+C:\sht\backMusic\backMusic\obj\Debug\backMusic.Form1.resources
+C:\sht\backMusic\backMusic\obj\Debug\backMusic.Properties.Resources.resources
+C:\sht\backMusic\backMusic\obj\Debug\backMusic.csproj.GenerateResource.Cache
+C:\sht\backMusic\backMusic\obj\Debug\backMusic.csproj.CoreCompileInputs.cache
+C:\sht\backMusic\backMusic\obj\Debug\backMusic.exe
+C:\sht\backMusic\backMusic\obj\Debug\backMusic.pdb
+C:\sht\backMusic\backMusic\bin\Debug\backMusic.exe.config
+C:\sht\backMusic\backMusic\bin\Debug\backMusic.exe
+C:\sht\backMusic\backMusic\bin\Debug\backMusic.pdb
+C:\sht\backMusic\backMusic\bin\Debug\Interop.WMPLib.dll
+C:\sht\backMusic\backMusic\bin\Debug\AxInterop.WMPLib.dll

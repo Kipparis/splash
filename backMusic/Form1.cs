@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Gma.UserActivityMonitor;
 using System.Runtime.InteropServices;
-using AxWMPLib;
 
 
 // Сделать открываемую в трее менюшку, для выбора корневой директории
@@ -32,6 +31,8 @@ namespace backMusic {
 
         public static string path = @"C:\sht\music";
 
+        public Label songName;
+
         System.Media.SoundPlayer pew;
         System.Media.SoundPlayer pupa;
         System.Media.SoundPlayer za;
@@ -43,10 +44,8 @@ namespace backMusic {
         PictureBox pb1;
         PictureBox pb2;
         
-        Form firstScreen;
-        Form secondScreen;
-
-        AxWindowsMediaPlayer player;
+        static public Form firstScreen;
+        static public Form secondScreen;
 
         mainState state;
 
@@ -63,19 +62,19 @@ namespace backMusic {
                         break;
                     case MCI_NOTIFY_SUPERSEDED:
                         // superseded handling
-                        MessageBox.Show("Superseded handling");
+                        //MessageBox.Show("Superseded handling");
                         break;
                     case MCI_NOTIFY_ABORTED:
                         // abort handling
-                        MessageBox.Show("Abort handling");
+                        //MessageBox.Show("Abort handling");
                         break;
                     case MCI_NOTIFY_FAILURE:
                         // failure! handling
-                        MessageBox.Show("Failure! Handling");
+                        //MessageBox.Show("Failure! Handling");
                         break;
                     default:
                         // haha
-                        MessageBox.Show("Haha");
+                        //MessageBox.Show("Haha");
                         break;
                 }
             }
@@ -146,6 +145,20 @@ namespace backMusic {
                 ImageLocation = "4.png",
                 Visible = false
             };
+
+            songName = new Label() {
+                Text = "None",
+                TextAlign = ContentAlignment.TopRight,
+                Padding = new Padding(0,50,0,0),
+                Location = new Point(0, 0),
+                AutoSize = false,
+                BackColor = Color.Transparent,
+                ForeColor = Color.White,
+                Font = new Font("Arial", 24, FontStyle.Bold)
+            };
+            pb1.Controls.Add(songName);
+            songName.AutoSize = false;
+            songName.Size = new Size(200, 1000);
 
             firstScreen.Controls.Add(pb1);
             secondScreen.Controls.Add(pb2);
@@ -233,6 +246,8 @@ namespace backMusic {
             // Увеличение размера, добавление картинки
             pb1.Size = firstScreen.Size;
 
+            songName.Size = firstScreen.Size;
+
             if (Screen.AllScreens.Length < 2) return;
             // Картинка добавлена на раннем этапе
             /////////Для второго монитора            
@@ -286,6 +301,7 @@ namespace backMusic {
         }
 
         public void PlaySong() {
+            songName.Text = mPlayer.name;
             mciSendString(mPlayer.ReturnPlay(), null, 0, this.Handle);
         }
 
