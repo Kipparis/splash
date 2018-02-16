@@ -30,7 +30,8 @@
             this.contextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.stopWatchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stopWatchToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.label1 = new System.Windows.Forms.Label();
+            this.frameTimer = new System.Windows.Forms.Timer(this.components);
+            this.splitter1 = new System.Windows.Forms.Splitter();
             this.contextMenu.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -68,13 +69,17 @@
             this.stopWatchToolStripMenuItem1.Text = "Stop watch";
             this.stopWatchToolStripMenuItem1.Click += new System.EventHandler(this.StopWatch_Click);
             // 
-            // label1
+            // frameTimer
             // 
-            this.label1.Location = new System.Drawing.Point(221, 98);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(380, 70);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "label1";
+            this.frameTimer.Tick += new System.EventHandler(this.frameTimer_Tick);
+            // 
+            // splitter1
+            // 
+            this.splitter1.Location = new System.Drawing.Point(0, 0);
+            this.splitter1.Name = "splitter1";
+            this.splitter1.Size = new System.Drawing.Size(3, 420);
+            this.splitter1.TabIndex = 1;
+            this.splitter1.TabStop = false;
             // 
             // Form1
             // 
@@ -84,7 +89,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.ClientSize = new System.Drawing.Size(749, 420);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.splitter1);
             this.KeyPreview = true;
             this.Name = "Form1";
             this.Text = "main";
@@ -100,7 +105,8 @@
         private System.Windows.Forms.ContextMenuStrip contextMenu;
         private System.Windows.Forms.ToolStripMenuItem stopWatchToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem stopWatchToolStripMenuItem1;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Timer frameTimer;
+        private System.Windows.Forms.Splitter splitter1;
     }
 }
 

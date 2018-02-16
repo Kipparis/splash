@@ -25,6 +25,35 @@ namespace backMusic {
         [DllImport("winmm.dll")]
         public static extern int mciGetErrorString(int errCode, StringBuilder errMsg, int buflen);
 
+        StringBuilder sb = new StringBuilder(128);
+        public ulong songPosition;
+        public ulong songLength;
+
+        public bool IsPlaying() {
+            mciSendString("status " + subName + " mode", sb, 128, IntPtr.Zero);
+            if (sb.Length == 7 &&
+                      sb.ToString().Substring(0, 7) == "playing")
+                return true;
+            else
+                return false;
+        }
+
+        public ulong GetSongPosition() {
+            if (subName == null) return(0);
+            mciSendString("status " + subName + " position", sb, 128, IntPtr.Zero);
+            if (sb == null) return (0);
+            songPosition = Convert.ToUInt64(sb.ToString());
+            return (songPosition);
+        }
+
+        public ulong GetSongLength() {
+            if (subName == null) return (0);
+            mciSendString("status " + subName + " length", sb, 128, IntPtr.Zero);
+            if (sb == null) return (0);
+            songLength = Convert.ToUInt64(sb.ToString());
+            return (songLength);
+        }
+
         Random randomNumber = new Random();
 
         public string path;
@@ -118,7 +147,7 @@ namespace backMusic {
                 pathFolder = Form1.path;
                 // Если плейлист ещё не создан
                 if (pathes == null) {
-                    pathes = Directory.GetFiles(pathFolder);
+                    pathes = Directory.GetFiles(pathFolder, "*.mp3");
                 }
             }
         }

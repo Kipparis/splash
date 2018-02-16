@@ -4,8 +4,9 @@
     "\\backMusic",
     "\\backMusic\\bin",
     "\\backMusic\\bin\\Debug",
-    "\\backMusic\\obj"
+    "\\backMusic\\obj",
+    "\\backMusic\\obj\\Debug"
   ],
-  "SelectedNode": "\\backMusic\\Program.cs",
+  "SelectedNode": "\\backMusic\\bin\\Debug\\bar.png",
   "PreviewInSolutionExplorer": false
 }

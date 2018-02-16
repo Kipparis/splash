@@ -16,7 +16,8 @@ using System.Runtime.InteropServices;
 namespace backMusic {
     public enum mainState {
         idle,
-        awake
+        awake,
+        choose
     }
 
     public partial class Form1 : Form {
@@ -29,9 +30,14 @@ namespace backMusic {
         private const int MCI_NOTIFY_ABORTED = 0x04;
         private const int MCI_NOTIFY_FAILURE = 0x08;
 
-        public static string path = @"C:\sht\music";
+        public static string path = @"C:\sht\music\";
 
         public Label songName;
+        public Label tips;
+        public Label currentSongPosition;
+        public Label currentSongLength;
+
+        public string tipsS;
 
         System.Media.SoundPlayer pew;
         System.Media.SoundPlayer pupa;
@@ -43,6 +49,7 @@ namespace backMusic {
 
         PictureBox pb1;
         PictureBox pb2;
+        PictureBox musicBar;
         
         static public Form firstScreen;
         static public Form secondScreen;
@@ -108,6 +115,9 @@ namespace backMusic {
             timer.Interval = 10000;
             timer.Start();
 
+            frameTimer.Interval = 10;
+            frameTimer.Start();
+
             mPlayer = new ExSoundPlayer();
 
             pew = new System.Media.SoundPlayer() {
@@ -146,19 +156,58 @@ namespace backMusic {
                 Visible = false
             };
 
+            musicBar = new PictureBox() {
+                Location = new Point(0, 0),
+                ImageLocation = "bar.png",
+                Visible = false,
+                SizeMode = PictureBoxSizeMode.StretchImage
+            };
+
             songName = new Label() {
                 Text = "None",
                 TextAlign = ContentAlignment.TopRight,
-                Padding = new Padding(0,50,0,0),
+                Height = 40,
                 Location = new Point(0, 0),
-                AutoSize = false,
-                BackColor = Color.Transparent,
+                BackColor = Color.FromArgb(100, 0, 0, 0),
                 ForeColor = Color.White,
-                Font = new Font("Arial", 24, FontStyle.Bold)
+                Font = new Font("Arial", 24, FontStyle.Bold),
+                AutoSize = true
+            };
+
+            tips = new Label() {
+                Text = "O - first song / next song \nS - stop \nR - random \nT - repeat \nY - play in order ",
+                TextAlign = ContentAlignment.MiddleLeft,
+                Height = 40,
+                Location = new Point(0, 0),
+                BackColor = Color.FromArgb(100, 0, 0, 0),
+                ForeColor = Color.White,
+                Font = new Font("Arial", 18, FontStyle.Bold),
+                AutoSize = true
+            };
+            currentSongPosition = new Label() {
+                Text = "0",
+                Height = 40,
+                Location = new Point(0, 0),
+                BackColor = Color.FromArgb(100, 0, 0, 0),
+                ForeColor = Color.White,
+                Font = new Font("Arial", 18, FontStyle.Bold),
+                AutoSize = true
+            };
+            currentSongLength = new Label() {
+                Text = "0",
+                Height = 40,
+                Location = new Point(0, 0),
+                BackColor = Color.FromArgb(100, 0, 0, 0),
+                ForeColor = Color.White,
+                Font = new Font("Arial", 18, FontStyle.Bold),
+                AutoSize = true
             };
             pb1.Controls.Add(songName);
-            songName.AutoSize = false;
-            songName.Size = new Size(200, 1000);
+            pb1.Controls.Add(tips);
+            pb1.Controls.Add(currentSongPosition);
+            pb1.Controls.Add(currentSongLength);
+
+            pb1.Controls.Add(musicBar);
 
             firstScreen.Controls.Add(pb1);
             secondScreen.Controls.Add(pb2);
@@ -173,10 +222,13 @@ namespace backMusic {
         }
 
         private void HookManager_PressedKey( object sender, KeyPressEventArgs e) {
-            if (state == mainState.awake) return; // Если комп в рабочем состоянии, то мы даже не проверяем клаву
+            if (state != mainState.idle) return; // Если комп в рабочем состоянии, то мы даже не проверяем клаву
             if (e.KeyChar == 'o') {
                 mPlayer.NextSong();
                 PlaySong();
+            } else
+            if (e.KeyChar == 'q') {
+                Awake();
             } else
             if (e.KeyChar == 'p') {
                 if (mPlayer != null) {
@@ -195,6 +247,10 @@ namespace backMusic {
             if (e.KeyChar == 'w') {
                 mciSendString(@"stop wedidit", null, 0, IntPtr.Zero);
             } else
+            if (e.KeyChar == 'c') {
+                ChooseDirectory();
+                state = mainState.idle;
+            } else
             if (e.KeyChar == 'd') {
                 mPlayer.NextSong();
                 //MessageBox.Show(mPlayer.currentPos.ToString());
@@ -208,17 +264,22 @@ namespace backMusic {
             if (e.KeyChar == 'y') {
                 mPlayer.state = playerState.order;
             } else
-            if (e.KeyChar == 'f') {
-                Idle();
-            } else 
-            if (e.KeyChar == 'g') {
-                Awake();
-            } 
+            if (e.KeyChar == 'j') {
+                GetSongPosition();
+            } else
+            if (e.KeyChar == 'm') {
+                Help();
+            }
+        }
+
+        private void Help() {
+            // Показ расписания, планов, добавление во всякие плейлисты, их создание, удаление песен
+            throw new NotImplementedException();
         }
 
         // Когда нажата кнопка мыши
         private void HookManager_MouseClick(object sender, MouseEventArgs e) {
-            pew.Play();
+            //pew.Play();
         }
 
         public void HideAll() {
@@ -233,9 +294,9 @@ namespace backMusic {
         // Когда передвигается мышь
         private void HookManager_MouseMove(object sender, MouseEventArgs e) {
             // Если таймер !включён!
+            if (state == mainState.choose) return;
             if (timer.Enabled) ResetTimer();  // Обновляем таймер
             if (state == mainState.awake) return;   // Значит сейчас фаза сна
-            Awake();
         }
 
         void SetUpScreens() {
@@ -246,7 +307,22 @@ namespace backMusic {
             // Увеличение размера, добавление картинки
             pb1.Size = firstScreen.Size;
 
-            songName.Size = firstScreen.Size;
+            musicBar.Location = new Point(0, 0);
+            musicBar.Size = new Size(firstScreen.Width, 16);
+            musicBar.Visible = true;
+
+            //songName.Size = firstScreen.Size;
+            songName.AutoSize = true;
+            songName.SetBounds(firstScreen.Width - songName.Width, firstScreen.Height / 8, 
+                songName.Width, songName.Height);
+
+            tips.Location = new Point(0, firstScreen.Height * 26 / 30);
+
+            currentSongPosition.Location = new Point(0, firstScreen.Height / 2);
+            currentSongLength.Location = new Point(0, firstScreen.Height * 1 / 4);
+
+            currentSongLength.Visible = false;
+            currentSongPosition.Visible = false;
 
             if (Screen.AllScreens.Length < 2) return;
             // Картинка добавлена на раннем этапе
@@ -293,7 +369,6 @@ namespace backMusic {
         }
 
         private void Form1_Load(object sender, EventArgs e) {
-
         }
 
         private void Form1_Shown(object sender, EventArgs e) {
@@ -302,6 +377,10 @@ namespace backMusic {
 
         public void PlaySong() {
             songName.Text = mPlayer.name;
+            songName.SetBounds(firstScreen.Width - songName.Width, firstScreen.Height / 8, 
+                songName.Width, songName.Height);
+            // Рассчитываем ширину в зависимости от имя
+            //songName.Width = songName.Text.Split().Length * 25;
             mciSendString(mPlayer.ReturnPlay(), null, 0, this.Handle);
         }
 
@@ -311,6 +390,12 @@ namespace backMusic {
 
         // Выбирает стандартную папку
         private void ChooseDirectory_Click(object sender, EventArgs e) {
+            ChooseDirectory();
+            state = mainState.idle;
+        }
+
+        public void ChooseDirectory() {
+            state = mainState.choose;
             using (FolderBrowserDialog dlgOpen = new FolderBrowserDialog()) {
                 //dlgOpen.Filter = "Mp3 File|*.mp3";
                 dlgOpen.SelectedPath = @"C:\sht\";
@@ -326,6 +411,29 @@ namespace backMusic {
         private void StopWatch_Click(object sender, EventArgs e) {
             if (timer.Enabled)  { timer.Enabled = false; } 
             else                { timer.Enabled = true; }
+        }
+
+        public void GetSongPosition() {
+            currentSongPosition.Text = mPlayer.GetSongPosition().ToString();
+        }
+
+        public void GetSongLength() {
+            currentSongLength.Text = mPlayer.GetSongLength().ToString();
+        }
+
+        public int songPosition {
+            get { return (int.Parse(currentSongPosition.Text)); }
+            set { currentSongPosition.Text = value.ToString(); }
+        }
+
+        private void frameTimer_Tick(object sender, EventArgs e) {
+            if (mPlayer.subName == null) return;
+            GetSongLength();
+            GetSongPosition();
+            if (mPlayer.songLength == 0 || mPlayer.songPosition == 0) return;
+            // Сначала найти отношение в float, потом  умножить его и перевести в int
+            int newWidth = Convert.ToInt32((double)firstScreen.Width * (double)mPlayer.songPosition / (double)mPlayer.songLength);
+            musicBar.Size = new Size(newWidth, 12);
         }
     }
 }
